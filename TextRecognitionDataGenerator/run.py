@@ -6,6 +6,7 @@ import multiprocessing
 import os
 import random
 from collections import namedtuple
+import pickle
 
 import yaml
 from PIL import ImageFile
@@ -75,9 +76,9 @@ def load_fonts(lang):
         Load all fonts in the fonts directories
     """
     # if lang == 'cn':
-    return glob.glob('fonts/{0}/*.ttf'.format(lang)) + \
-        glob.glob('fonts/{0}/*.ttc'.format(lang)) + \
-        glob.glob('fonts/{0}/*.otf'.format(lang))
+    return glob.glob('./fonts/{0}/*.ttf'.format(lang)) + \
+        glob.glob('./fonts/{0}/*.ttc'.format(lang)) + \
+        glob.glob('./fonts/{0}/*.otf'.format(lang))
     # else:
     #     return [os.path.join('fonts/latin', font) for font in os.listdir('fonts/latin')]
 
@@ -89,8 +90,7 @@ def main():
 
     # Argument parsing
     config = load_config()
-    print(config)
-
+    # print(config)
     # Create the directory if it does not exist.
     try:
         os.makedirs(config.output_dir)
@@ -100,22 +100,21 @@ def main():
 
     # Create font (path) list
     fonts = load_fonts(config.language)
-    # print(fonts)
-    # Creating synthetic sentences (or word)
-    strings = []
 
+    # Creating synthetic sentences (or word)
+    fonts_arr = []
     if not config.check_font:
         fonts_arr = [fonts[random.randrange(0, len(fonts))]
-                     for _ in range(0, config.count)]
+                    for _ in range(0, config.count)]
     else:
         fonts_arr = fonts
 
-    import pickle
-    fonts_dict_path = './fonts/' + config.language + '/font_dict.pkl'
+    # print('fonts_arr: ',fonts_arr)
+    fonts_dict_path = './fonts/' + config.language + '/font_dict.pkl' #only for jp
     try:
         fonts_dict = pickle.load(open(fonts_dict_path, "rb"))
         print("Loaded fonts dict from", fonts_dict_path)
-        font_charsets = [fonts_dict[font] for font in fonts_arr]
+        font_charsets = [fonts_dict[font[2:]] for font in fonts_arr]
     except:
         fonts_dict = {}
         fonts_dict = generate_char_map_from_font(fonts, fonts_dict)
@@ -123,9 +122,10 @@ def main():
             os.system('mkdir ./fonts/' + config.language)
         pickle.dump(fonts_dict, open(fonts_dict_path, "wb"))
         print("Saved fonts dict to", fonts_dict_path)
-        font_charsets = [fonts_dict[font] for font in fonts_arr]
+        font_charsets = [fonts_dict[font[2:]] for font in fonts_arr]
 
     # print(fonts_dict)
+    strings = []
     if config.use_wikipedia:
         strings = create_strings_from_wikipedia(
             config.length, config.count, config.language)
@@ -192,8 +192,8 @@ def main():
                     strings,
                     fonts_arr,
                     [config.output_dir] * string_count,
-                    [config.format] * string_count,
-                    # [random.randint(config.format, config.format + 40) for x in range(string_count)],
+                    # [config.format] * string_count,
+                    [random.randint(config.format, config.format + 40) for x in range(string_count)],
                     [config.extension] * string_count,
                     [config.skew_angle] * string_count,
                     [config.random_skew] * string_count,
@@ -221,3 +221,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
