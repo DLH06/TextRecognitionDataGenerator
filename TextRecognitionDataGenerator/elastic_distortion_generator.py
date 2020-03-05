@@ -5,6 +5,7 @@ from scipy import misc
 from scipy.ndimage import affine_transform as scipy_affine_transform
 from scipy.ndimage.filters import gaussian_filter
 from scipy.ndimage.interpolation import map_coordinates
+from skimage.transform import resize
 
 
 def calcAffineMatrix(sourcePoints, targetPoints):
@@ -75,8 +76,8 @@ def elastic_transform(image, elastic_value_x=0.0004, elastic_value_y=0.0004):
     dy = gaussian_filter((random_state.rand(nY, nX) * 2 - 1), sigma)
     x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(
         shape[0]), np.arange(shape[2]))
-    dx = misc.imresize(dx, [shape[0], shape[1]], interp='bicubic')
-    dy = misc.imresize(dy, [shape[0], shape[1]], interp='bicubic')
+    dx = resize(dx, (shape[0], shape[1]), order=3)
+    dy = resize(dy, (shape[0], shape[1]), order=3)
     # plt.imshow(dx, cmap=plt.cm.gray)
     # plt.show()
     dxT = []
